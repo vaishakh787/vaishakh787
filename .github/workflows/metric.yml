@@ -1,0 +1,93 @@
+name: Metrics
+on:
+  schedule: [{cron: "0 0 * * *"}]
+  workflow_dispatch:
+  push: {branches: ["main"]}
+
+jobs:
+  github-metrics:
+    runs-on: ubuntu-latest
+    environment: 
+      name: production
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Ensure full git history
+
+      - uses: lowlighter/metrics@latest
+        with:
+          token: ${{ secrets.METRICS_TOKEN }}
+
+          user: Vaishak 
+          template: classic
+          base: header, activity, community, repositories, metadata
+          config_timezone: Kerala/India
+
+          # Achievements
+          plugin_achievements: no
+          plugin_achievements_display: detailed
+          plugin_achievements_secrets: yes
+          plugin_achievements_threshold: C
+
+          # Activity
+          plugin_activity: yes
+          plugin_activity_days: 14
+          plugin_activity_filter: all
+          plugin_activity_limit: 5
+          plugin_activity_load: 300
+          plugin_activity_visibility: all
+
+          # Habits
+          plugin_habits: yes
+          plugin_habits_days: 14
+          plugin_habits_facts: yes
+          plugin_habits_from: 200
+
+          # Introduction
+          plugin_introduction: yes
+          plugin_introduction_title: yes
+
+          # IsoCalendar
+          plugin_isocalendar: yes
+          plugin_isocalendar_duration: full-year
+
+          # Languages
+          plugin_languages: yes
+          plugin_languages_analysis_timeout: 15
+          plugin_languages_categories: markup, programming
+          plugin_languages_colors: github
+          plugin_languages_limit: 8
+          plugin_languages_recent_categories: markup, programming
+          plugin_languages_recent_days: 14
+          plugin_languages_recent_load: 300
+          plugin_languages_sections: most-used
+          plugin_languages_threshold: 0%
+
+          # Notable
+          plugin_notable: yes
+          plugin_notable_from: organization
+
+          # Stars
+          plugin_stars: yes
+          plugin_stars_limit: 4
+
+          # Traffic
+          plugin_traffic: yes
+
+      - name: Download Lysia ASCII GIF
+        run: |
+          mkdir -p assets
+          curl -L "https://media.tenor.com/g58NwNDNNkQAAAAC/lysia-lysia-ascii.gif" -o assets/lysia_ascii.gif
+
+      - name: Commit and Push GIF
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git pull origin main
+          git add -f assets/lysia_ascii.gif
+          git commit -m "🎞️ Update Lysia ASCII GIF" || echo "No changes to commit"
+          git push origin main
